@@ -1,9 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from './components/Home.vue';
 import User from './components/User.vue';
+import ComponentWithData from './components/ComponentWithData.vue';
+import Nested from './components/Nested.vue';
+import Dynamic from './components/Dynamic.vue';
+import NotFound from './components/NotFound.vue';
+import GuardedWithLeave from './components/GuardedWithLeave.vue';
 import { globalState } from './store';
 import { scrollWaiter } from './scrollWatier';
 const component = () => console.log('fetching component') || import('./components/Generic.vue');
+let removeRoute;
 
 const routes = [
     { path: '/home', redirect: '/' },
@@ -12,7 +18,60 @@ const routes = [
         components: { default: Home, other: component },
         props: { default: to => ({ waited: to.meta.waitedFor }) }
     },
-    { path: '/users/:id', name: 'user', component: User, props: true }
+    { path: '/users/:id', name: 'user', component: User, props: true },
+    { path: '/with-data', name: 'WithData', component: ComponentWithData },
+    {
+        path: '/dynamic',
+        name: 'dynamic',
+        component: Nested,
+        end: false,
+        strict: true,
+        beforeEnter(to, from, next) {
+            if (!removeRoute) {
+                removeRoute = router.addRoute('dynamic', {
+                    path: 'child',
+                    component: Dynamic
+                })
+                return next(to.fullPath);
+            }
+            return next();
+        }
+    },
+    {
+        path: '/nested',
+        alias: '/anidado',
+        component: Nested,
+        name: 'Nested',
+        children: [
+            {
+                path: 'nested',
+                alias: 'a',
+                name: 'NestedNested',
+                component: Nested,
+                children: [
+                    {
+                        path: 'nested',
+                        name: 'NestedNestedNested',
+                        component: Nested
+                    }
+                ]
+            },
+            {
+                path: 'other',
+                alias: 'otherAlias',
+                component: Nested,
+                name: 'NestedOther'
+            },
+            {
+                path: 'also-as-absolute',
+                alias: '/absolute',
+                name: 'absolute-child',
+                component: Nested
+            }
+        ]
+    },
+    { path: '/:data(.*)', component: NotFound, name: 'NotFound' },
+    { path: '/cant-leave', component: GuardedWithLeave }
 ];
 
 export const router = createRouter({

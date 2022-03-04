@@ -9,9 +9,9 @@ const route = useRoute();
 const state = inject('state');
 const viewName = ref('default');
 
-useLink({ to: '/' });
-useLink({ to: '/documents/hello' });
-useLink({ to: '/children' });
+// useLink({ to: '/' });
+// useLink({ to: '/documents/hello' });
+// useLink({ to: '/children' });
 
 const currentLocation = computed(() => {
   const { matched, ...rest } = route;
